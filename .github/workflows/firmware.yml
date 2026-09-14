@@ -1,0 +1,39 @@
+name: firmware
+
+on:
+  push:
+    branches: [main]
+    paths: ["firmware/**", ".github/workflows/firmware.yml"]
+  pull_request:
+    paths: ["firmware/**", ".github/workflows/firmware.yml"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      - name: Build firmware
+        working-directory: firmware
+        run: pio run
+
+      - name: Build filesystem image
+        working-directory: firmware
+        run: pio run -t buildfs
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: protography-firmware
+          path: |
+            firmware/.pio/build/xiao_esp32s3/firmware.bin
+            firmware/.pio/build/xiao_esp32s3/littlefs.bin
+            firmware/.pio/build/xiao_esp32s3/bootloader.bin
+            firmware/.pio/build/xiao_esp32s3/partitions.bin
