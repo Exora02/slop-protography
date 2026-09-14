@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0a0b0d">
+<title>Protography</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header id="topbar">
+  <div class="brand">PROTO<span>GRAPHY</span></div>
+  <div class="indicators">
+    <span id="ind-cam" class="dot" title="camera"></span>
+    <span id="ind-af" class="dot" title="autofocus"></span>
+    <span id="ind-ws" class="dot" title="connection"></span>
+    <span id="store-bar" title="photo storage"><i></i></span>
+  </div>
+</header>
+
+<main>
+
+  <!-- SHOOT -->
+  <section id="view-shoot" class="tab active">
+    <div id="live-wrap">
+      <img id="live" alt="live view" draggable="false" inert>
+      <div id="live-off">
+        LIVE VIEW OFF
+        <div class="sub">toggle LIVE or long-press the shutter button</div>
+      </div>
+      <div id="busy" class="hidden">CAPTURING…</div>
+      <div id="mode-tag">HQ</div>
+    </div>
+
+    <div id="modes" class="chips">
+      <button data-mode="0" class="chip">HQ</button>
+      <button data-mode="1" class="chip">RAW</button>
+      <button data-mode="2" class="chip">MOSH</button>
+      <button data-mode="3" class="chip">BEND</button>
+    </div>
+
+    <div id="fx">
+      <label class="fx-row">
+        <span class="fx-label">SEED</span>
+        <input id="seed" type="number" min="0" step="1" inputmode="numeric">
+        <button id="dice" title="random seed">DICE</button>
+      </label>
+      <label class="fx-row">
+        <span class="fx-label">GLITCH</span>
+        <input id="intensity" type="range" min="0" max="10" step="1">
+        <output id="int-out">0</output>
+      </label>
+      <p id="fx-hint"></p>
+    </div>
+
+    <div id="shoot-row">
+      <button id="focus" class="round-btn">FOCUS</button>
+      <button id="shutter" aria-label="take photo"></button>
+      <button id="live-toggle" class="round-btn on">LIVE</button>
+    </div>
+
+    <div id="last-shot" class="hidden">
+      <a id="last-link" download>SAVED — TAP TO OPEN</a>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section id="view-gallery" class="tab">
+    <div id="gallery" class="grid"></div>
+    <p id="gallery-empty" class="hidden">no photos yet — go shoot</p>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="view-settings" class="tab">
+    <h2>CAPTURE</h2>
+    <label class="set-row"><span>JPEG quality</span>
+      <input id="set-quality" type="range" min="6" max="20" step="1">
+      <output id="set-quality-out"></output></label>
+    <label class="set-row"><span>Flip horizontal</span>
+      <input id="set-hmirror" type="checkbox"></label>
+    <label class="set-row"><span>Flip vertical</span>
+      <input id="set-vflip" type="checkbox"></label>
+
+    <h2>LIVE VIEW</h2>
+    <label class="set-row"><span>Size</span>
+      <select id="set-livesize">
+        <option value="0">320 × 240</option>
+        <option value="1">640 × 480</option>
+        <option value="2">800 × 600</option>
+        <option value="3">1280 × 720</option>
+      </select></label>
+    <label class="set-row"><span>FPS</span>
+      <input id="set-fps" type="range" min="1" max="24" step="1">
+      <output id="set-fps-out"></output></label>
+
+    <h2>POWER</h2>
+    <label class="set-row"><span>Sleep after (min, 0 = never)</span>
+      <input id="set-sleep" type="number" min="0" max="240" step="5"></label>
+
+    <h2>WI-FI</h2>
+    <p class="note">The camera runs its own network. Leave the password empty for an
+    open network (easy to join); set one to require WPA2.</p>
+    <label class="set-row"><span>Network name</span>
+      <input id="set-apname" type="text" maxlength="24" placeholder="Protography-XXXX"></label>
+    <label class="set-row"><span>Password (8+ chars, empty = open)</span>
+      <input id="set-appass" type="text" maxlength="63"></label>
+
+    <div class="btn-row">
+      <button id="set-save" class="cta">SAVE</button>
+      <button id="set-reboot">REBOOT</button>
+      <button id="set-sleep-now">SLEEP</button>
+    </div>
+
+    <h2>ABOUT</h2>
+    <p class="note" id="about"></p>
+  </section>
+</main>
+
+<nav id="tabbar">
+  <button data-tab="shoot" class="active">SHOOT</button>
+  <button data-tab="gallery">GALLERY</button>
+  <button data-tab="settings">SETUP</button>
+</nav>
+
+<!-- PHOTO DETAIL -->
+<div id="detail" class="modal hidden">
+  <div class="sheet">
+    <img id="detail-img" alt="photo" draggable="false">
+    <div id="detail-meta"></div>
+    <div class="btn-row">
+      <a id="detail-jpg" class="cta" download>SAVE JPG</a>
+      <a id="detail-dng" download>SAVE DNG</a>
+      <button id="detail-del">DELETE</button>
+      <button id="detail-close">CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
