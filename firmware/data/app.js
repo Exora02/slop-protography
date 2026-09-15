@@ -172,7 +172,7 @@ function renderGallery() {
     img.src = `/api/photo/${p.id}.jpg`;
     const tag = document.createElement("span");
     tag.className = "tag";
-    tag.textContent = MODES[p.mode];
+    tag.textContent = MODES[p.mode] + (p.sd ? " ·SD" : "") + (!p.in_ram ? " ·COLD" : "");
     b.append(img, tag);
     b.onclick = () => openDetail(p);
     grid.append(b);
@@ -185,7 +185,8 @@ function openDetail(p) {
     `#${p.id} — ${MODES[p.mode]} — ${p.jw}×${p.jh} — ${fmtKB(p.jlen)}<br>` +
     (p.rlen ? `RAW ${p.rw}×${p.rh} — ${fmtKB(p.rlen)}<br>` : "") +
     (p.seed ? `seed ${p.seed} · intensity ${p.intensity}<br>` : "") +
-    `boot ${p.boot} · t+${(p.ts / 1000).toFixed(1)}s`;
+    `boot ${p.boot} · t+${(p.ts / 1000).toFixed(1)}s<br>` +
+    (p.in_ram ? "hot: in camera RAM" : "cold: on SD card");
 
   const jpg = $("detail-jpg");
   jpg.href = `/api/photo/${p.id}.jpg`;

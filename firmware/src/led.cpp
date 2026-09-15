@@ -4,8 +4,10 @@ static LedPattern s_pattern = LED_OFF;
 static LedPattern s_base = LED_STEADY;
 static uint32_t s_one_shot_until = 0;
 static bool s_level = false;
+static bool s_suspended = false;
 
 static void led_write(bool on) {
+    if (s_suspended) return;
 #if LED_ACTIVE_LOW
     digitalWrite(LED_PIN, on ? LOW : HIGH);
 #else
@@ -24,11 +26,18 @@ void led_set(LedPattern p) {
 }
 
 void led_flash(LedPattern one_shot) {
+    if (s_suspended) return;   // the card is talking; don't fight it for the pin
     s_pattern = one_shot;
     s_one_shot_until = millis() + 220;
 }
 
+void led_suspend() {
+    s_suspended = true;
+    pinMode(LED_PIN, INPUT);   // high-impedance: SD chip-select takes over
+}
+
 void led_tick() {
+    if (s_suspended) return;
     if (s_one_shot_until != 0 && millis() > s_one_shot_until) {
         s_one_shot_until = 0;
         s_pattern = s_base;

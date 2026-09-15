@@ -7,6 +7,7 @@
 #include "camera_ctl.h"
 #include "glitch.h"
 #include "log.h"
+#include "sdcard.h"
 #include "ws_live.h"
 
 static const char* TAG = "cap";
@@ -139,6 +140,12 @@ uint32_t capture_photo(const CaptureRequest& req_in, const char** why) {
     }
 
     s_busy = false;
+    // Persistent tier: mirror to SD when a card is mounted. The photo is
+    // committed to RAM already, so failure here is cosmetic.
+    const PhotoMeta* stored = store_find(meta.id);
+    if (stored) {
+        sd_write_photo(*stored, jpeg, raw);
+    }
     broadcast_photo(meta);
     return meta.id;
 }

@@ -10,6 +10,7 @@
 #include "log.h"
 #include "net.h"
 #include "power.h"
+#include "sdcard.h"
 #include "settings.h"
 #include "store.h"
 #include "ws_live.h"
@@ -46,6 +47,10 @@ static void broadcast_status() {
     store["used"] = store_used();
     store["budget"] = store_budget();
     store["count"] = store_count();
+    JsonObject sd = root["sd"].to<JsonObject>();
+    sd["ok"] = sd_ok();
+    sd["free"] = sd_free_bytes();
+    sd["count"] = sd_count();
     JsonObject live = root["live"].to<JsonObject>();
     live["on"] = s_live_on;
     live["clients"] = ws_client_count();
@@ -122,6 +127,16 @@ void setup() {
 
     if (!LittleFS.begin(true)) {
         LOGE(TAG, "LittleFS mount failed (formatting didn't help?)");
+    }
+
+    // Persistent tier: mount the card if present. On the Sense expansion
+    // board the card's chip-select shares GPIO21 with the user LED — when a
+    // card is mounted we hand the pin over and the LED becomes a write
+    // indicator (it flickers when art hits the card).
+    bool card = sd_begin();
+    if (card && SD_PIN_CS == LED_PIN) {
+        led_suspend();
+        LOGI(TAG, "LED handed over to SD chip-select (shared GPIO%d)", LED_PIN);
     }
 
     bool net_ok = net_begin();

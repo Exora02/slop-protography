@@ -39,8 +39,22 @@
 // ---- Status LED -------------------------------------------------------------
 // XIAO ESP32S3 user LED is on GPIO21 and active LOW. If a board revision
 // turns out to be active high, flip LED_ACTIVE_LOW to 0.
+// NOTE: on the Sense expansion board, the microSD chip-select is ALSO GPIO21
+// (Seeed's design). When an SD card is mounted the LED is handed over to the
+// card and flickers on writes — the firmware does this automatically.
 #define LED_PIN         (21)
 #define LED_ACTIVE_LOW  (1)
+
+// ---- SD card (persistent storage tier) ---------------------------------------
+// Defaults match the microSD slot on the XIAO ESP32S3 Sense expansion board
+// (FAT32, <=32 GB, gold fingers inward). Wiring your own slot? Move CS to a
+// free pin (e.g. GPIO4 / D3) and the status LED stays yours.
+#define SD_PIN_CS       (21)
+#define SD_PIN_SCK      (7)    // D8
+#define SD_PIN_MISO     (8)    // D9
+#define SD_PIN_MOSI     (9)    // D10
+#define SD_SPI_HZ       (20000000)
+#define SD_LIST_MAX     (128)  // cap on SD-side photos listed in the gallery
 
 // ---- Network ----------------------------------------------------------------
 #define HTTP_PORT       (80)

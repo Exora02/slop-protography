@@ -27,3 +27,6 @@ void led_begin();
 void led_set(LedPattern p);
 void led_flash(LedPattern one_shot);   // show a pattern once, then return
 void led_tick();
+void led_suspend();                    // release the pin (SD owns GPIO21 on
+                                       // the Sense expansion board); the LED
+                                       // then flickers with card traffic

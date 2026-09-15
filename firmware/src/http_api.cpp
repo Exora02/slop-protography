@@ -2,6 +2,7 @@
 
 #include <ArduinoJson.h>
 #include <LittleFS.h>
+#include <SD.h>
 #include <uri/UriRegex.h>
 
 #include "camera_ctl.h"
@@ -11,6 +12,7 @@
 #include "log.h"
 #include "net.h"
 #include "power.h"
+#include "sdcard.h"
 #include "settings.h"
 #include "store.h"
 #include "ws_live.h"
@@ -39,6 +41,10 @@ static void send_status_json() {
     store["used"] = store_used();
     store["budget"] = store_budget();
     store["count"] = store_count();
+    JsonObject sd = root["sd"].to<JsonObject>();
+    sd["ok"] = sd_ok();
+    sd["free"] = sd_free_bytes();
+    sd["count"] = sd_count();
     JsonObject live = root["live"].to<JsonObject>();
     live["on"] = s_live_enabled;
     live["clients"] = ws_client_count();
@@ -48,26 +54,37 @@ static void send_status_json() {
     s_server.send(200, "application/json", out);
 }
 
+static void photo_meta_json(const PhotoMeta* m, JsonObject o, bool in_ram) {
+    o["id"] = m->id;
+    o["mode"] = m->mode;
+    o["mode_name"] = cap_mode_name(m->mode);
+    o["jw"] = m->jw;
+    o["jh"] = m->jh;
+    o["jlen"] = m->jlen;
+    o["rw"] = m->rw;
+    o["rh"] = m->rh;
+    o["rlen"] = m->rlen;
+    o["seed"] = m->seed;
+    o["intensity"] = m->intensity;
+    o["ts"] = m->ts_ms;
+    o["boot"] = m->boot_seq;
+    o["in_ram"] = in_ram;
+    o["sd"] = sd_has_photo(m->id);
+}
+
 static void send_photos_json() {
     JsonDocument doc;
     JsonArray arr = doc.to<JsonArray>();
+    // Hot tier first (newest first), then card-only photos.
     for (uint16_t i = 0; i < store_count(); i++) {
         const PhotoMeta* m = store_meta(i);
         if (!m) continue;
-        JsonObject o = arr.add<JsonObject>();
-        o["id"] = m->id;
-        o["mode"] = m->mode;
-        o["mode_name"] = cap_mode_name(m->mode);
-        o["jw"] = m->jw;
-        o["jh"] = m->jh;
-        o["jlen"] = m->jlen;
-        o["rw"] = m->rw;
-        o["rh"] = m->rh;
-        o["rlen"] = m->rlen;
-        o["seed"] = m->seed;
-        o["intensity"] = m->intensity;
-        o["ts"] = m->ts_ms;
-        o["boot"] = m->boot_seq;
+        photo_meta_json(m, arr.add<JsonObject>(), true);
+    }
+    for (uint16_t i = 0; i < sd_count(); i++) {
+        const PhotoMeta* m = sd_meta(i);
+        if (!m || store_find(m->id)) continue;   // already listed from RAM
+        photo_meta_json(m, arr.add<JsonObject>(), false);
     }
     String out;
     serializeJson(doc, out);
@@ -137,17 +154,28 @@ static void handle_photo_jpeg() {
     }
     uint32_t len = 0;
     const uint8_t* p = store_jpeg_ptr(id, &len);
-    if (!p) {
-        s_server.send(404, "text/plain", "no such photo");
+    if (p) {
+        store_pin(id);
+        String cd = String("inline; filename=\"protography_") + id + ".jpg\"";
+        s_server.sendHeader("Content-Disposition", cd);
+        // send_P takes (type, buffer, length) and does not treat content as a
+        // C string — required for binary JPEG payloads.
+        s_server.send_P(200, "image/jpeg", (const char*)p, len);
+        store_unpin(id);
         return;
     }
-    store_pin(id);
-    String cd = String("inline; filename=\"protography_") + id + ".jpg\"";
-    s_server.sendHeader("Content-Disposition", cd);
-    // send_P takes (type, buffer, length) and does not treat content as a
-    // C string — required for binary JPEG payloads.
-    s_server.send_P(200, "image/jpeg", (const char*)p, len);
-    store_unpin(id);
+    // Cold tier: stream straight off the card.
+    if (sd_ok()) {
+        File f = SD.open(String("/P") + id + ".JPG");
+        if (f && !f.isDirectory()) {
+            String cd = String("inline; filename=\"protography_") + id + ".jpg\"";
+            s_server.sendHeader("Content-Disposition", cd);
+            s_server.streamFile(f, "image/jpeg");
+            f.close();
+            return;
+        }
+    }
+    s_server.send(404, "text/plain", "no such photo");
 }
 
 static void handle_photo_dng() {
@@ -157,16 +185,25 @@ static void handle_photo_dng() {
         return;
     }
     const PhotoMeta* m = store_find(id);
-    if (!m || !m->rlen) {
+    uint32_t rlen = 0;
+    const uint8_t* raw = m ? store_raw_ptr(id, &rlen) : nullptr;
+
+    // Cold tier: the DNG was materialized onto the card at capture time.
+    if (!raw && sd_ok()) {
+        File f = SD.open(String("/P") + id + ".DNG");
+        if (f && !f.isDirectory()) {
+            String cd = String("attachment; filename=\"protography_") + id + ".dng\"";
+            s_server.sendHeader("Content-Disposition", cd);
+            s_server.streamFile(f, "image/x-adobe-dng");
+            f.close();
+            return;
+        }
+    }
+    if (!m || !m->rlen || !raw) {
         s_server.send(404, "text/plain", "no raw for this photo");
         return;
     }
-    uint32_t rlen = 0;
-    const uint8_t* raw = store_raw_ptr(id, &rlen);
-    if (!raw) {
-        s_server.send(404, "text/plain", "no such photo");
-        return;
-    }
+
     store_pin(id);
     DngCtx ctx;
     if (!dng_begin(m, raw, rlen, ctx)) {
@@ -204,7 +241,9 @@ static void handle_photo_delete() {
         s_server.send(400, "text/plain", "bad id");
         return;
     }
-    if (store_remove(id)) {
+    bool in_ram = store_remove(id);
+    bool on_sd = sd_ok() && sd_remove_photo(id);
+    if (in_ram || on_sd) {
         s_server.send(200, "application/json", "{\"ok\":true}");
     } else {
         s_server.send(404, "text/plain", "no such photo");
