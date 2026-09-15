@@ -56,12 +56,29 @@ format can't be switched at runtime; that's why RAW shots take ~1.5–2 s.
 |---------------------------------|-------------|
 | camera frame buffer (5MP JPEG)  | ~1 MB       |
 | RAW frame buffer (UXGA, 2 bpp)  | ~3.8 MB (transient, only during RAW capture) |
-| photo arena                     | ≤ 5 MB cap  |
+| photo arena (hot tier)          | ≤ 5 MB cap  |
 | live JPEG + WebSocket tx buffer | ~100 KB     |
 
 Eviction is oldest-first and skips photos currently being streamed out
 (pinned). A RAW capture picks the largest of UXGA/SXGA/HD/SVGA that fits in
 free PSRAM with headroom.
+
+## Storage tiers
+
+Photos are captured into the PSRAM arena (hot tier) and, when a FAT32 card
+is mounted, mirrored to it (cold tier) as three files per photo at the card
+root: `/P<id>.JPG`, `/P<id>.DNG` (materialized at capture time through the
+streaming DNG writer) and `/P<id>.JSON` (metadata sidecar). The gallery
+merges both tiers (RAM entries first, card-only entries after, deduplicated
+by id); JPEG/DNG downloads serve from RAM when hot and stream off the card
+otherwise; deletes hit both tiers.
+
+Two hardware quirks worth knowing (details in HARDWARE.md): the expansion
+board's SD chip-select shares GPIO21 with the user LED — with a card
+mounted, the firmware suspends the LED module and the pin flickers on card
+writes — and photo ids embed a persistent boot counter, so filenames stay
+unique across reboots (wrapping after 65 536 boots, which is a you-problem
+for the year 2200 or so).
 
 ## Wire protocol
 
@@ -73,9 +90,9 @@ HTTP (port 80):
 | `/api/status`               | GET    | firmware/camera/store/settings   |
 | `/api/photos`               | GET    | photo list (newest first)        |
 | `/api/capture`              | POST   | `{mode, seed, intensity}`        |
-| `/api/photo/<id>.jpg`       | GET    | JPEG download                    |
-| `/api/photo/<id>.dng`       | GET    | DNG download (chunked stream)    |
-| `/api/photo/<id>`           | DELETE | remove photo                     |
+| `/api/photo/<id>.jpg`       | GET    | JPEG download (RAM, else SD)     |
+| `/api/photo/<id>.dng`       | GET    | DNG download (RAM, else SD)      |
+| `/api/photo/<id>`           | DELETE | remove photo (both tiers)        |
 | `/api/settings`             | POST   | partial settings update          |
 | `/api/snapshot.jpg`         | GET    | one live frame (no store)        |
 | `/api/reboot`               | POST   | restart                          |
@@ -106,5 +123,7 @@ The web app mirrors this protocol exactly — see `firmware/data/app.js`.
 - No clock: photo timestamps are millis + boot counter; first STA sync to
   NTP would give wall-clock EXIF.
 - No auth on the AP by default (open network) — set a password in settings.
-- Gallery lives in RAM: pulling photos before battery dies is on you (that's
-  the artistic gamble).
+- SD writes happen synchronously in the capture path (up to ~1–2 s for a
+  5MP JPEG + DNG); a background write queue would hide that latency.
+- The SD gallery listing caps at the newest 128 card photos (RAM for the
+  index; files beyond the cap are still downloadable by id).

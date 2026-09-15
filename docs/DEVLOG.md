@@ -2,6 +2,39 @@
 
 Working notes, decisions and dead ends, newest last.
 
+## 2026-09-15 — SD tier, species branding, public repo
+
+**Repo went public** as
+[Exora02/slop-protography](https://github.com/Exora02/slop-protography);
+CI green on first Linux run; gh CLI installed and authenticated for
+shell-side repo ops.
+
+**SD storage tier.** The user has a microSD for the device, so the
+"amnesia" design got a second act: every stored photo now mirrors to a
+FAT32 card as `/P<id>.JPG` + `.DNG` + `.JSON` sidecar, the gallery merges
+hot (PSRAM) and cold (card) tiers, and downloads stream from whichever
+tier holds the photo. Verified against Seeed's wiki that the Sense
+expansion board slot is SPI on D8/D9/D10 with **CS on GPIO21 — the same
+pin as the user LED**. Rather than fight it, the firmware hands the pin
+over when a card mounts (`led_suspend()`) and the LED becomes a write
+indicator. Custom-wired slots can move CS in config.h.
+
+**Fun bug of the day:** naming the module `sd.h` collided with the
+Arduino core's `SD.h` on case-insensitive NTFS — `#include <SD.h>`
+resolved to our own file and every `File`/`SD` symbol vanished. Renamed
+to `sdcard.*`.
+
+**Species branding.** Protography = *Protogen* + *photography* (the user's
+wordplay — a protogen is mostly visor, this camera is mostly LED). New
+SVG banner (docs/assets/) with an animated protogen-visor-camera: aperture
+eye, LED mouth, glitch slice. README gained a species notice, the LED/SD
+shared-pin lore, and the storage story updated from "amnesia" to
+"two-tier memory".
+
+**State:** compiles green with SD (RAM 27.9%, flash 22.6%). Still zero
+hardware validation — the v0.2 checklist in the previous entry stands.
+
+
 ## 2026-09-14 — project bootstrap
 
 **Goal.** Screenless artistic camera: XIAO ESP32S3 Sense + OV5640 + shutter

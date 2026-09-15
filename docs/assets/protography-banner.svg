@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="240" viewBox="0 0 880 240" role="img" aria-label="Protography banner: a protogen visor whose eye is a camera aperture">
+  <defs>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00e5ff"/>
+      <stop offset="1" stop-color="#c8ff00"/>
+    </linearGradient>
+    <linearGradient id="visorfill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#14171c"/>
+      <stop offset="1" stop-color="#0d0f13"/>
+    </linearGradient>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="5"/>
+    </filter>
+  </defs>
+
+  <!-- field -->
+  <rect width="880" height="240" rx="18" fill="#0a0b0d"/>
+  <rect width="880" height="240" rx="18" fill="none" stroke="#262a30" stroke-width="1"/>
+
+  <!-- scanlines over the visor zone -->
+  <g opacity="0.06" stroke="#00e5ff" stroke-width="1">
+    <path d="M0 40 H210 M0 52 H210 M0 64 H210 M0 76 H210 M0 88 H210 M0 100 H210 M0 112 H210 M0 124 H210 M0 136 H210 M0 148 H210 M0 160 H210 M0 172 H210 M0 184 H210 M0 196 H210"/>
+  </g>
+
+  <!-- ================= protogen visor ================= -->
+  <g transform="translate(38,42)">
+    <!-- visor body -->
+    <rect x="0" y="0" width="160" height="156" rx="36" fill="url(#visorfill)" stroke="url(#glow)" stroke-width="2"/>
+    <rect x="4" y="4" width="152" height="148" rx="32" fill="none" stroke="#00e5ff" stroke-width="1" opacity="0.15"/>
+
+    <!-- eye = camera aperture -->
+    <g transform="translate(80,58)">
+      <circle r="34" fill="none" stroke="url(#glow)" stroke-width="3" filter="url(#soft)" opacity="0.6"/>
+      <circle r="34" fill="none" stroke="url(#glow)" stroke-width="2.5"/>
+      <!-- iris blades -->
+      <g stroke="url(#glow)" stroke-width="2.5" stroke-linecap="round" fill="none">
+        <path d="M0,-24 L19,-13"/>
+        <path d="M22,-4 L7,-24" transform="rotate(60)"/>
+        <path d="M22,-4 L7,-24" transform="rotate(120)"/>
+        <path d="M22,-4 L7,-24" transform="rotate(180)"/>
+        <path d="M22,-4 L7,-24" transform="rotate(240)"/>
+        <path d="M22,-4 L7,-24" transform="rotate(300)"/>
+      </g>
+      <circle r="8" fill="url(#glow)">
+        <animate attributeName="r" values="8;8;3;8;8" dur="5s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <!-- mouth = LED speech -->
+    <g fill="url(#glow)">
+      <rect x="22" y="118" width="14" height="7" rx="3.5">
+        <animate attributeName="opacity" values="1;1;0.15;1" dur="3.2s" begin="0s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="42" y="118" width="22" height="7" rx="3.5">
+        <animate attributeName="opacity" values="0.15;1;1;1;0.15" dur="3.2s" begin="0.2s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="70" y="118" width="10" height="7" rx="3.5">
+        <animate attributeName="opacity" values="1;0.15;1;1;1" dur="2.1s" begin="0.4s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="86" y="118" width="22" height="7" rx="3.5">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="1.3s" begin="0s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="114" y="118" width="14" height="7" rx="3.5">
+        <animate attributeName="opacity" values="1;1;0.15;1" dur="3.2s" begin="0.8s" repeatCount="indefinite"/>
+      </rect>
+    </g>
+
+    <!-- glitch slice -->
+    <g transform="translate(0,84)">
+      <rect x="10" y="0" width="140" height="9" fill="#0a0b0d"/>
+      <rect x="24" y="1.5" width="52" height="6" fill="#00e5ff" opacity="0.85"/>
+      <rect x="92" y="2.5" width="38" height="4" fill="#c8ff00" opacity="0.85"/>
+    </g>
+  </g>
+
+  <!-- ================= wordmark ================= -->
+  <g font-family="ui-monospace, Menlo, Consolas, monospace">
+    <text x="248" y="106" font-size="52" font-weight="bold" fill="#e8eaed" letter-spacing="4">PROTO<tspan fill="#c8ff00">GRAPHY</tspan></text>
+    <text x="252" y="140" font-size="14" fill="#7d8590" letter-spacing="3">PHOTOGRAPHIC DEGRADATION PLATFORM</text>
+
+    <text x="252" y="176" font-size="13" fill="#00e5ff" letter-spacing="1">1 lens · 1 LED · 0 screens · 0 clouds · 0 AI</text>
+    <text x="252" y="200" font-size="13" fill="#c8ff00" letter-spacing="1">100% PROTOGEN VISOR ENERGY — the visor is the camera</text>
+  </g>
+
+  <!-- corner tick, terminal vibe -->
+  <g font-family="ui-monospace, Menlo, Consolas, monospace" fill="#3a4048" font-size="12">
+    <text x="24" y="222">slot: microSD · FAT32 · the long-term memory</text>
+    <text x="780" y="222">fw 0.1</text>
+  </g>
+</svg>

@@ -1,8 +1,19 @@
 # 📸🌀 PROTOGRAPHY — The Edge-Native Photographic Degradation Platform 🚀✨
 
+<p align="center">
+  <img src="docs/assets/protography-banner.svg" width="880" alt="Protography banner — a protogen visor whose eye is a camera aperture, mouth a row of blinking LEDs">
+</p>
+
 **AI-First. Board-Ready. Battery-Native. Glitch-Compliant.**
 
 Your photos are too perfect. We can fix that. 🔧
+
+> 🐾 **Species notice.** *Protography* is a portmanteau of **Protogen** — the
+> cyborg species that is essentially 60% visor by volume — and *photography*.
+> The naming is not decorative: a protogen is a creature whose whole face is
+> a screen that emotes in light, and this device is a camera whose whole
+> display is one LED that emotes in light. **The visor is the camera.** The
+> banner above is anatomically correct down to the aperture. 🧬
 
 [![firmware](https://github.com/Exora02/slop-protography/actions/workflows/firmware.yml/badge.svg)](https://github.com/Exora02/slop-protography/actions/workflows/firmware.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-black)](LICENSE)
@@ -37,19 +48,21 @@ value proposition fits in one hand and refuses to phone home. 📵
   metal*, not in some distant GPU farm pretending to be a creative partner
 - 🎲 **Deterministic chaos** — every artifact is seed-reproducible, enabling
   audit-ready art pipelines and regression testing of beauty
-- 📉 **Data gravity: 5 MB** — an artisanal, volatile roll. If you didn't
-  pull it, you didn't want it. Storage costs: amortized to zero by amnesia
+- 🧠 **Two-tier memory architecture** — a 5 MB hot tier (PSRAM, artisanal,
+  evaporates on sleep) and a FAT32 cold tier (microSD, up to 32 GB, remembers
+  everything forever, tragically). Amnesia is now an opt-out feature²
 - 🔌 **Works offline forever** — including in airplane mode, in a field,
   during the collapse of the telecom sector
 
 ¹ (patent not pending)
+² to opt out, simply forget to insert a card
 
 ## 📈 Market Position
 
 | | **Protography** | Flagship phone | Leica M-Series | Disposable camera |
 |---|---|---|---|---|
 | Price | ~€45 of parts | €1,200 | €9,000 | €15 |
-| Photos per outing | 5–10 (curated by RAM) | 400 identical | 400 identical | 27 (cursed) |
+| Photos per outing | 5–10 hot · thousands cold (SD) | 400 identical | 400 identical | 27 (cursed) |
 | Glitch fidelity | **Native, in-sensor** | Via third-party app | None | Accidental, non-reproducible |
 | Screen | **0** ✅ | 6.8" | 3" | 0 (parity achieved) |
 | Cloud dependency | None | Aggressive | None | None |
@@ -162,6 +175,12 @@ permanent up-time since boot. Grafana integration: squint. 👁️
 | slow blink | streaming live view |
 | fast blink | error (usually existential) |
 | double flash | asset stored 🎉 |
+| flicker per write | cold tier active — the LED *is* the SD chip-select |
+
+That last row is not a joke, it's [schematic accuracy](docs/HARDWARE.md#sd-card-slot):
+on the Sense expansion board, the card's chip-select and the user LED share
+GPIO21, so when memory is mounted, the visor flickers whenever art hits the
+card. Storage telemetry, one bit at a time. 🐾
 
 ## 📊 Business Intelligence
 
@@ -240,8 +259,9 @@ translation. 🧾
 | "Business Intelligence" | a Markdown table you read just now |
 | "Zero-prompt UX" | one button. press it. |
 | "Works offline forever" | there is no online mode |
-| "Artisanal volatile roll" | no SD card in the BOM; sleep wipes the gallery |
+| "Two-tier memory architecture" | RAM, plus an SD card we mirror files onto |
 | "Trusted by industry leaders" | trusted by exactly one artist (hi) |
+| "100% protogen visor energy" | a protogen's face is a screen that emotes in light; ours is one (1) LED doing its best |
 | "SOC 2 Type II" | Type TODO |
 | "AI-First" | **no AI anywhere on this board.** not even a small one 🔍 |
 
@@ -256,7 +276,12 @@ The rest is engineering on 8 MB of PSRAM — which is significantly harder. 🧮
 
 > "I hold everything. I remember nothing. On sleep, I forget it all.
 > It's not a bug, it's a lifestyle."
-> — **PSRAM**, 8 MB, edge node
+> — **PSRAM**, 8 MB, hot tier
+
+> "They gave me the long-term memory. Every smear, every cursed Bayer
+> pattern, 32 GB of receipts. I remember everything now. We both have
+> regrets."
+> — **the microSD**, cold tier, FAT32
 
 > "Everyone stares at the sensor. Nobody watches me. I blink the truth."
 > — **GPIO21**, LED, observability department

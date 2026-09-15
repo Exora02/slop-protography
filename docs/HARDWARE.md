@@ -11,6 +11,8 @@ the product pages.
 |-------------------------------------------------|-------------------------------------------------------------|
 | Seeed Studio XIAO ESP32S3 **Sense**             | the *Sense* variant — it has the camera B2B connector + mic  |
 | OV5640 camera board for XIAO ESP32S3 Sense      | Seeed sells the 5MP module with autofocus VCM (101-MDZ-LY0041). Get the Seeed one, not a generic OV5640 breakout — the connector and pinout must match |
+| XIAO Sense **expansion board** (or your own slot) | carries the microSD slot (see below)                        |
+| microSD card, FAT32, ≤ 32 GB                    | the persistent storage tier (optional but recommended)      |
 | LiPo cell, 3.7 V, **with protection**           | 500–2000 mAh, JST or bare pads (see wiring)                 |
 | Tactile button, 6×6 mm, through-hole            | the shutter                                                 |
 | 100 kΩ resistor                                 | external pull-up on the button line (deep-sleep wake)       |
@@ -71,6 +73,30 @@ button is the only soldering:
 4. Case it: a mint tin, a 3D-printed box, a film-canister… the art is yours.
    Leave a window for the LED (it's the status display) and let the antenna
    live outside metal enclosures.
+
+## SD card slot
+
+The easy path is the **XIAO Sense expansion board**, whose microSD slot is
+wired for you. Card rules: **FAT32, max 32 GB**, gold fingers facing inward
+when inserting. Format problem cards with the SD Card Formatter (full, not
+quick) — cards that previously held a Linux OS are the usual offenders.
+
+The slot rides the SPI pins (SCK = D8/GPIO7, MISO = D9/GPIO8,
+MOSI = D10/GPIO9) with **chip select on GPIO21** — which is *also* the user
+LED. That's Seeed's design: when a card is mounted, the firmware hands the
+pin over to the card and your status LED becomes a write indicator that
+flickers when photos hit the card. If you want the status LED back, wire
+your own slot with CS on a free pin (e.g. GPIO4 / D3) and change
+`SD_PIN_CS` in `firmware/src/config.h`.
+
+With a card inserted, every photo is mirrored to `/P<id>.JPG` (+ `.DNG` for
+RAW shots, + a `.JSON` sidecar with capture metadata). The gallery serves
+from RAM first, then the card. Without a card, everything works — the roll
+is just volatile and sleep wipes it.
+
+Notes: cutting jumper **J3** on the expansion board frees the SPI pins for
+other uses; SD and the camera do not conflict (the camera uses GPIO10–18 +
+38–48).
 
 ## Gotchas checklist
 
