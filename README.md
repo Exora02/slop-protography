@@ -8,12 +8,9 @@
 
 Your photos are too perfect. We can fix that. 🔧
 
-> 🐾 **Species notice.** *Protography* is a portmanteau of **Protogen** — the
-> cyborg species that is essentially 60% visor by volume — and *photography*.
-> The naming is not decorative: a protogen is a creature whose whole face is
-> a screen that emotes in light, and this device is a camera whose whole
-> display is one LED that emotes in light. **The visor is the camera.** The
-> banner above is anatomically correct down to the aperture. 🧬
+> 🐾 *Etymology: **Protogen** + **photography** — named, with affection, for
+> the species that is mostly visor. The device keeps the proportions: one
+> lens, one LED, nothing else facing the world.*
 
 [![firmware](https://github.com/Exora02/slop-protography/actions/workflows/firmware.yml/badge.svg)](https://github.com/Exora02/slop-protography/actions/workflows/firmware.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-black)](LICENSE)
@@ -261,7 +258,7 @@ translation. 🧾
 | "Works offline forever" | there is no online mode |
 | "Two-tier memory architecture" | RAM, plus an SD card we mirror files onto |
 | "Trusted by industry leaders" | trusted by exactly one artist (hi) |
-| "100% protogen visor energy" | a protogen's face is a screen that emotes in light; ours is one (1) LED doing its best |
+| "type specimen: P. graphica" | a camera, an LED, and a naming scheme |
 | "SOC 2 Type II" | Type TODO |
 | "AI-First" | **no AI anywhere on this board.** not even a small one 🔍 |
 
