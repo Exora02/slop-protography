@@ -1,66 +1,81 @@
 // ---------------------------------------------------------------------------
-// Protography — parametric housing
+// Protography — parametric housing  (v2: flex-camera + SMD button layout)
 //
-// A little brick camera for the XIAO ESP32S3 Sense + camera board stack.
-// Geometry axis convention (mm):
-//   +X  depth  : front (lens) wall at x=0 ... back wall
-//   +Y  width  : -Y wall carries the USB-C and microSD cutouts
-//   +Z  up     : shutter button on the top face
-// The board stack stands vertically, camera board facing the front wall;
-// the battery lies flat behind it.
+// Layout for the real assembled device (see docs/HOUSING.md):
+//   - the OV5640 camera HEAD rides a short FPC flex: it sits alone in a
+//     pocket right behind the front lens window;
+//   - the XIAO + Sense board stack lies FLAT in the cavity, USB-C and the
+//     microSD slot facing the -Y wall;
+//   - the battery lies flat behind the stack (wires through the mid gap);
+//   - the shutter is an SMD tactile switch wedged in a pedestal pocket;
+//     the lid carries a compliant membrane key that presses its plunger.
 //
-// Parts (set `part` or use -D on the command line):
+// Axes (mm): +X front(lens, x=0) -> back; +Y width (-Y wall: USB + SD
+// slots); +Z up (lid on top, membrane shutter on the lid).
+//
+// Parts (-D part=N, numeric for Windows shells):
 //   0 shell      main body        — print front face DOWN
-//   1 lid        top plate        — print flat
-//   2 cap        shutter cap      — print flat
-//   3 coupon     calibration test — print FIRST, check every cutout, adjust
-//   4 assembly   everything laid out for preview
-// (numeric so -D part=0 works from Windows shells without quoting)
-//
-// Every dimension you may need to tweak is below. The coupon exists so you
-// never have to guess: print it, test-fit, caliper, adjust, then print the
-// real parts.
+//   1 lid        top plate w/ membrane shutter — print flat, 0.12 layers
+//   2 memtest    standalone membrane click test — print first, feel it
+//   3 coupon     calibration plate — print first, caliper everything
+//   4 assembly   preview layout
 // ---------------------------------------------------------------------------
 
-/* ---------------- boards (VERIFY WITH CALIPERS via coupon) ------------- */
-stack_h = 9.4;      // total stack thickness: camera board + B2B + XIAO
-stack_w = 21.0;     // board edge running vertically once installed
-stack_d = 17.8;     // board edge running along the enclosure width (Y)
+/* ------------- camera head on flex (CALIPER-CHECK via coupon) ---------- */
+lens_d = 11.6;     // window for the lens barrel (AF focus-ring travel)
+lens_z = 8.5;      // lens center height above the interior floor
+lens_y = 0;        // lateral offset from the interior width center
+cam_w = 11.0;      // camera head width (Y) + clearance
+cam_h = 11.0;      // camera head height (Z) + clearance
+cam_t = 5.0;       // camera head depth (X)
 
-board_bot = 3.5;    // camera board lower edge above the interior floor
-lens_off_w = 10.5;  // lens center, measured up from the camera board lower edge
-lens_y   = 0;       // lens lateral offset from the interior width center
-lens_d   = 11.6;    // through-hole for the lens barrel (focus ring travel!)
+/* ------------- main stack lying flat ------------------------------------ */
+stack_l = 21.0;    // XIAO(+Sense) length along X
+stack_w = 17.8;    // stack width along Y
+stack_t = 9.4;     // stack total thickness (Z) — caliper!
+stack_gap = 2.5;   // gap between camera pocket and stack front edge
 
-usb_w = 10.4;  usb_h = 4.4;   usb_x = 9.0;   // USB-C cutout (center, on -Y wall)
-sd_w  = 15.5;  sd_h  = 3.6;   sd_x  = 2.6;   // microSD cutout (center, on -Y wall)
-led_d = 3.2;      // LED glow window diameter on the +Y wall
-led_x = 4.5;      // LED window position along the front wall (from x=wall)
-led_z = 16;       // LED window height above the interior floor
+usb_w = 10.4;  usb_h = 4.4;   usb_x = 18.0;  // USB-C slot (center, -Y wall)
+usb_z = 7.0;                                // slot center above interior floor
+sd_w  = 15.5;  sd_h  = 3.6;   sd_x  = 9.0;   // microSD slot (center, -Y wall)
+sd_z  = 5.0;
 
-/* ---------------- battery ------------------------------------------------ */
-bat_l = 40;  bat_w = 30;  bat_t = 7.5;        // e.g. 803040 class LiPo
-wire_gap = 6;                                 // slack between stack and battery
+/* ------------- battery --------------------------------------------------- */
+bat_l = 40;  bat_w = 30;  bat_t = 7.5;       // pouch cell, caliper!
+wire_gap = 5;                               // wires + slack between stack and cell
 
-/* ---------------- shell -------------------------------------------------- */
+/* ------------- compliant shutter ---------------------------------------- */
+sw_w = 6.8;        // SMD switch body, square, drop-in pocket width
+sw_t = 3.6;        // switch body height (above pocket floor)
+sw_pl = 0.8;       // plunger travel height
+sw_pre = 0.3;      // pre-load gap between stub and plunger at rest
+btn_x = 34;        // shutter position from the front wall (interior)
+btn_y = 0;         // lateral offset from interior width center
+mem_d = 16;        // membrane paddle diameter
+web_t = 0.7;       // flexure web thickness (≈3 layers @0.2, or 5-6 @0.12)
+paddle_t = 1.6;    // paddle thickness
+stub_d = 7.0;      // stub under the paddle that presses the plunger
+stub_h = 2.2;      // stub reach below the lid underside
+btn_clear = 9.5;   // clearance hole through the lid (stub passes)
+
+/* ------------- shell ----------------------------------------------------- */
 wall    = 2.4;
 floor_t = 2.4;
 lid_t   = 2.2;
-clear   = 0.5;      // general clearance around parts
-snap_f  = 0.25;     // lid friction-fit tolerance
-rr      = 6;        // outer corner radius
+clear   = 0.5;
+snap_f  = 0.25;
+rr      = 6;
 $fn     = 72;
 
-/* ---------------- shutter ------------------------------------------------ */
-btn_hole = 7.6;     // hole in the top face (over the tactile button)
-btn_x    = 14;      // button position on the top face
-cap_d    = 11.6;    // shutter cap: press-fit sleeve + dome
-cap_grip = 1.2;     // sleeve wall the hole grips
+/* LED glow window (+Y wall) — glow leaks from under the lying stack */
+led_d = 3.2;  led_x = 14;  led_z = 4.5;
 
-/* ---------------- derived interior --------------------------------------- */
-in_l = stack_h + clear + wire_gap + bat_l + 2*clear;   // interior depth (X)
-in_w = max(bat_w + 2*clear, 24);                        // interior width (Y)
-in_h = max(stack_w + 2*clear, bat_t + 2) + 4;           // interior height (Z)
+/* ------------- derived --------------------------------------------------- */
+stack_x0 = cam_t + stack_gap;                       // stack front edge (X)
+bat_x0 = stack_x0 + stack_l + clear + wire_gap;     // battery front edge
+in_l = bat_x0 + bat_l + 2*clear;                    // interior depth (X)
+in_w = max(bat_w + 2*clear, stack_w + 4, cam_w + 4);// interior width (Y)
+in_h = max(cam_h + 2.5, stack_t + 3.5, bat_t + 2.5) + 2; // interior height (Z)
 
 out_l = in_l + wall + wall;
 out_w = in_w + 2*wall;
@@ -68,58 +83,44 @@ out_h = in_h + floor_t + lid_t;
 
 echo(str("outer size: ", out_l, " x ", out_w, " x ", out_h, " mm"));
 
-/* ---------------- helpers ------------------------------------------------ */
-module rbox(size, r) {           // box with rounded vertical edges
+module rbox(size, r) {
     hull() {
-        translate([r, r, 0])           cylinder(r=r, h=size[2]);
-        translate([size[0]-r, r, 0])   cylinder(r=r, h=size[2]);
-        translate([r, size[1]-r, 0])   cylinder(r=r, h=size[2]);
+        translate([r, r, 0])                cylinder(r=r, h=size[2]);
+        translate([size[0]-r, r, 0])        cylinder(r=r, h=size[2]);
+        translate([r, size[1]-r, 0])        cylinder(r=r, h=size[2]);
         translate([size[0]-r, size[1]-r, 0]) cylinder(r=r, h=size[2]);
     }
 }
 
-/* stack pocket: camera board edge clips + rear stop for the XIAO.
-   Local frame: origin at interior floor, front-bottom corner of the cavity. */
-module stack_retention() {
-    clip_t = 1.6;
-    board_cy = in_w/2 + lens_y;                 // board center line in Y
-    // two prongs gripping the camera board's lower and upper edges
-    for (z = [board_bot - clip_t, board_bot + stack_w])
-        translate([0.6, board_cy - (stack_d + 1.6)/2, z])
-            cube([clip_t, stack_d + 1.6, clip_t]);
-    // rear stop behind the XIAO
-    translate([stack_h + clear + 0.8, board_cy - bat_w/2, 0])
-        cube([2, bat_w, stack_w - 2]);
-}
-
-/* ---------------- parts --------------------------------------------------- */
+// z of the switch plunger tip once wedged in its pedestal pocket
+function plunger_z() = out_h - lid_t - stub_h - sw_pre;
+// pedestal height so the pocket floor puts the plunger at that z
+function pedestal_h() = plunger_z() - sw_pl - sw_t - floor_t;
 
 module shell() difference() {
     union() {
         rbox([out_l, out_w, out_h - lid_t], rr);
-        // board stack retention: edge clips + rear stop, grown from the floor
-        translate([wall, wall, floor_t]) stack_retention();
+        translate([wall, wall, floor_t]) interior_features();
     }
-    // cavity, open at the back
+    // cavity, open at the top (the lid closes it)
     translate([wall, wall, floor_t]) rbox([in_l, in_w, in_h + 1], rr - wall/2);
-    // battery floor recess (keeps the cell from sliding)
-    translate([wall + stack_h + clear + wire_gap, wall + (in_w - bat_w)/2, floor_t])
+    // battery floor recess
+    translate([wall + bat_x0, wall + (in_w - bat_w)/2, floor_t])
         cube([bat_l + 2*clear, bat_w, 0.6]);
 
     // ---- front: lens window + recessed bezel ----
-    lz = floor_t + board_bot + lens_off_w;      // lens center height
-    translate([-1, wall + in_w/2 + lens_y, lz])
+    translate([-1, wall + in_w/2 + lens_y, floor_t + lens_z])
         rotate([0, 90, 0]) cylinder(d=lens_d, h=wall + 2);
-    translate([-0.8, wall + in_w/2 + lens_y, lz])
+    translate([-0.8, wall + in_w/2 + lens_y, floor_t + lens_z])
         rotate([0, 90, 0]) cylinder(d=lens_d + 11, h=1.0);
 
-    // ---- -Y wall: USB-C and microSD (rounded-end slots) ----
-    translate([wall + usb_x, -1, floor_t + 8.6])
+    // ---- -Y wall: USB-C and microSD slots (rounded ends) ----
+    translate([wall + usb_x, -1, floor_t + usb_z])
         rotate([-90, 0, 0]) hull() {
             cylinder(d=usb_h, h=wall + 2);
             translate([usb_w - usb_h, 0, 0]) cylinder(d=usb_h, h=wall + 2);
         }
-    translate([wall + sd_x, -1, floor_t + 2.2])
+    translate([wall + sd_x, -1, floor_t + sd_z])
         rotate([-90, 0, 0]) hull() {
             cylinder(d=sd_h, h=wall + 2);
             translate([sd_w - sd_h, 0, 0]) cylinder(d=sd_h, h=wall + 2);
@@ -134,25 +135,67 @@ module shell() difference() {
         cube([wall + 2, 12, 1.6]);
 }
 
-module lid() {
+// Interior furniture, grown from the cavity floor (local frame).
+module interior_features() {
+    // camera head pocket: rails above/below the head, corner posts behind
+    rail_t = 1.8;
+    cy = in_w/2 + lens_y;
+    for (z = [lens_z - cam_h/2 - rail_t, lens_z + cam_h/2])
+        translate([0.4, cy - cam_w/2 - 1, z])
+            cube([cam_t + 1.6, cam_w + 2, rail_t]);
+    for (y = [cy - cam_w/2 - 1.2, cy + cam_w/2 + 0.4])
+        translate([cam_t + 0.8, y, lens_z - cam_h/2 - 1])
+            cube([1.6, 0.8, cam_h + 2]);
+
+    // lying stack: front stop, side rails, rear stop
+    translate([stack_x0 - 2, cy - stack_w/2 - 1, 0])
+        cube([2, stack_w + 2, 2.5]);
+    for (y = [cy - stack_w/2 - 1.6, cy + stack_w/2 + 0.6])
+        translate([stack_x0, y, 0])
+            cube([stack_l + 1, 1.0, 2.5]);
+    translate([stack_x0 + stack_l + 1, cy - stack_w/2 - 1, 0])
+        cube([2, stack_w + 2, 2.5]);
+
+    // SMD switch pedestal with drop-in pocket (switch trapped once lid is on)
+    translate([btn_x - 5.5, cy + btn_y - 5.5, 0])
+        difference() {
+            cube([11, 11, pedestal_h()]);
+            translate([0.6, 0.6, pedestal_h() - sw_t])
+                cube([sw_w + 1.2 - 1.2, sw_w + 1.2 - 1.2, sw_t + 1]);
+            // note: pocket is (sw_w)x(sw_w) after the 0.6 inset on x/y
+        }
+}
+
+module lid() difference() {
+    rbox([out_l, out_w, lid_t], rr);
+    translate([1.2, 1.2, -0.01]) rbox([out_l - 2.4, out_w - 2.4, lid_t + 0.5], rr - 1.2);
+    // shutter clearance hole (the membrane's stub reaches through it)
+    translate([wall + btn_x, wall + in_w/2 + btn_y, -1]) cylinder(d=btn_clear, h=lid_t + 2);
+    // antenna cable exit, aligned with the shell rim notch
+    translate([out_l - wall - 1, wall + in_w/2 - 6, -1]) cube([wall + 2, 12, lid_t + 2]);
+    // engraving
+    translate([out_l/2, out_w/2 - 7, lid_t - 0.6])
+        linear_extrude(1.0)
+            text("PROTOGRAPHY", size=4.6, halign="center",
+                 font="Liberation Sans:style=Bold", spacing=1.15);
+    translate([out_l/2, out_w/2 + 6, lid_t - 0.6])
+        linear_extrude(1.0)
+            text("P. graphica · habitat: pockets", size=2.6, halign="center",
+                 font="Liberation Sans:style=Italic");
+}
+module lid_additions() {
+    // compliant membrane shutter: web annulus + paddle + underside stub
+    bx = wall + btn_x; by = wall + in_w/2 + btn_y;
     difference() {
-        rbox([out_l, out_w, lid_t], rr);
-        translate([1.2, 1.2, -0.01]) rbox([out_l - 2.4, out_w - 2.4, lid_t + 0.5], rr - 1.2);
-        // shutter hole (the lid is the top face; the button lives in the
-        // cavity under it, the cap plugs in from above)
-        translate([wall + btn_x, wall + in_w/2, -1]) cylinder(d=btn_hole, h=lid_t + 2);
-        // antenna cable exit, aligned with the shell rim notch
-        translate([out_l - wall - 1, wall + in_w/2 - 6, -1]) cube([wall + 2, 12, lid_t + 2]);
-        // engraving: raised on the inside = debossed on the outside when
-        // printed flat; flip sign depth to taste
-        translate([out_l/2, out_w/2 - 7, lid_t - 0.6])
-            linear_extrude(1.0)
-                text("PROTOGRAPHY", size=4.6, halign="center",
-                     font="Liberation Sans:style=Bold", spacing=1.15);
-        translate([out_l/2, out_w/2 + 6, lid_t - 0.6])
-            linear_extrude(1.0)
-                text("P. graphica · habitat: pockets", size=2.6, halign="center",
-                     font="Liberation Sans:style=Italic");
+        translate([bx, by, lid_t]) cylinder(d=mem_d + 2.6, h=web_t);
+        translate([bx, by, lid_t - 1]) cylinder(d=mem_d - 2.2, h=web_t + 2);
+    }
+    translate([bx, by, lid_t + web_t]) cylinder(d=mem_d, h=paddle_t);
+    translate([bx, by, lid_t - stub_h]) cylinder(d=stub_d, h=stub_h);
+    // finger ring on the paddle
+    translate([bx, by, lid_t + web_t]) difference() {
+        cylinder(d=mem_d - 1.5, h=paddle_t);
+        cylinder(d=mem_d - 4.5, h=paddle_t + 1);
     }
     // friction rim
     translate([wall + snap_f, wall + snap_f, lid_t])
@@ -161,64 +204,65 @@ module lid() {
             translate([1.8, 1.8, -0.5]) rbox([in_l - 2*snap_f - 3.6, in_w - 2*snap_f - 3.6, 4], rr - wall);
         }
 }
+module lid_full() { lid(); lid_additions(); }
 
-module cap() {
-    // sleeve plugs into the top-face hole; dome is the button you feel
-    sleeve_h = 3.2;
+// Standalone click test: print this alone to feel the membrane before
+// committing the whole lid (try 0.2 and 0.12 layer heights).
+module memtest() {
     difference() {
-        union() {
-            cylinder(d=btn_hole - 0.5, h=sleeve_h);
-            // dome: upper hemisphere sitting on the sleeve
-            translate([0, 0, sleeve_h])
-                difference() {
-                    sphere(d=cap_d);
-                    translate([-cap_d, -cap_d, -cap_d - 0.01]) cube(2*cap_d);
-                }
-            translate([0, 0, sleeve_h - 0.01])
-                cylinder(d1=btn_hole - 0.5, d2=cap_d*0.72, h=1.2);
-        }
-        // hollow the underside so it presses on the plunger rim, not center
-        translate([0, 0, sleeve_h - 1.0]) cylinder(d=btn_hole - 2.6, h=6);
+        cylinder(d=mem_d + 14, h=2.2);
+        cylinder(d=mem_d - 2, h=5);          // travel room under the web
     }
+    difference() {
+        cylinder(d=mem_d + 2.6, h=2.2 + web_t);
+        translate([0, 0, 2.2 - 1]) cylinder(d=mem_d - 2.2, h=web_t + 2);
+    }
+    translate([0, 0, 2.2 + web_t]) cylinder(d=mem_d, h=paddle_t);
+    translate([0, 0, 2.2 + web_t]) difference() {
+        cylinder(d=mem_d - 1.5, h=paddle_t);
+        cylinder(d=mem_d - 4.5, h=paddle_t + 1);
+    }
+    translate([0, 0, 2.2 + web_t + paddle_t + 1.6]) linear_extrude(0.8)
+        text("click", size=4, halign="center", font="Liberation Sans:style=Italic");
 }
 
 module coupon() {
-    // Calibration plate: print this first, test every cutout on the real
-    // assembled stack, adjust the parameters above, then print the parts.
+    // Calibration plate: test every cutout + the switch pocket on the real
+    // assembled parts, adjust the parameters above, then print the parts.
     difference() {
         rbox([70, 34, 2.4], 3);
-        // lens hole
-        translate([12, 17, -1]) cylinder(d=lens_d, h=5);
-        // shutter hole + cap fit
-        translate([30, 24, -1]) cylinder(d=btn_hole, h=5);
-        // USB slot
-        translate([42, 9, -1]) rotate([-90, 0, 0]) hull() {
+        translate([12, 17, -1]) cylinder(d=lens_d, h=5);                    // lens
+        translate([30, 24, -1]) cylinder(d=btn_clear, h=5);                  // stub clearance
+        translate([42, 9, -1]) rotate([-90, 0, 0]) hull() {                  // USB
             translate([0, 0, -0.1]) cylinder(d=usb_h, h=5);
             translate([usb_w - usb_h, 0, -0.1]) cylinder(d=usb_h, h=5);
         }
-        // SD slot
-        translate([42, 25, -1]) rotate([-90, 0, 0]) hull() {
+        translate([42, 25, -1]) rotate([-90, 0, 0]) hull() {                 // SD
             translate([0, 0, -0.1]) cylinder(d=sd_h, h=5);
             translate([sd_w - sd_h, 0, -0.1]) cylinder(d=sd_h, h=5);
         }
-        // wall-thickness gauge: steps of 1.8 / 2.4 / 3.0
-        for (i = [0:2])
+        for (i = [0:2])                                                      // hole gauge
             translate([56 + i*4.2, 6, -1]) cylinder(d=2.0 + i*0.2, h=5);
         translate([6, 4, -0.01]) linear_extrude(2.5)
             text("calibrate me", size=3.2, font="Liberation Sans:style=Italic");
+    }
+    // switch pocket sample: does the SMD switch wedge in and stay?
+    translate([58, 24, 0]) difference() {
+        cube([11, 11, 6]);
+        translate([(11 - sw_w)/2, (11 - sw_w)/2, 2.4]) cube([sw_w, sw_w, 6]);
     }
 }
 
 module assembly() {
     shell();
-    translate([0, out_w + 8, 0]) lid();
-    translate([out_l + 14, out_w/2, 0]) cap();
-    translate([0, out_w + 8 + out_w + 6, 0]) coupon();
+    translate([0, out_w + 10, lid_t + web_t + paddle_t]) rotate([180, 0, 0]) lid_full();
+    translate([out_l + 20, out_w/2, 0]) memtest();
+    translate([0, out_w + 10 + out_w + 10, 0]) coupon();
 }
 
 part = 4;
 if (part == 0) shell();
-else if (part == 1) lid();
-else if (part == 2) cap();
+else if (part == 1) lid_full();
+else if (part == 2) memtest();
 else if (part == 3) coupon();
 else assembly();

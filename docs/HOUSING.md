@@ -1,85 +1,103 @@
 # Housing
 
-A parametric 3D-printed enclosure for the assembled camera. Source of truth
-is [`hardware/housing/protography_case.scad`](../hardware/housing/protography_case.scad)
-— every dimension is a named constant at the top of the file, and the
-printable STLs in `hardware/housing/stl/` are generated from it (rerun
-`export.bat` after any change; Windows users: OpenSCAD installs to
-`C:\Program Files\OpenSCAD`).
+A parametric 3D-printed enclosure, modeled around the **actual assembled
+device** (camera head on its FPC flex, XIAO+Sense stack, direct-soldered
+battery, SMD shutter switch). Source of truth:
+[`hardware/housing/protography_case.scad`](../hardware/housing/protography_case.scad)
+— every dimension is a named constant; regenerate the STLs with `export.bat`
+(OpenSCAD at `C:\Program Files\OpenSCAD`).
 
-The shape: a small brick camera (≈ 60 × 36 × 31 mm with the default
-battery). The board stack stands vertically behind the front wall — camera
-board facing forward, lens looking through a Ø11.6 mm window with a
-recessed bezel — and the battery lies flat behind it. The lid is the top
-face and carries the shutter hole; USB-C and microSD slots are on the same
-side wall; a Ø3.2 window on the opposite wall lets the status LED glow out.
+**STLs ready for the slicer** are in
+[`hardware/housing/stl/`](../hardware/housing/stl/) — no conversion needed,
+that's already the slicer-native format:
+
+| file | part |
+|---|---|
+| `protography_shell.stl` | body: lens window, camera-head pocket, lying-stack stops, switch pedestal, USB/SD slots, LED window, battery bay |
+| `protography_lid.stl` | top plate with the **compliant membrane shutter** (web + paddle + stub), engraving, friction rim |
+| `protography_memtest.stl` | standalone membrane — print first and feel the click |
+| `protography_coupon.stl` | calibration plate — print first, caliper everything |
+
+## The shutter (v2 redesign)
+
+The photo of the build showed a **small SMD tactile on flying wires** —
+nothing for a press-fit cap to bear against. So the shutter is now a fully
+printed compliant mechanism, nothing to solder or glue:
+
+- the SMD switch **wedges into a square pocket** on top of a printed
+  pedestal (friction fit; trapped permanently once the lid is on);
+- the lid carries a **membrane key**: Ø16 paddle on a 0.7 mm flexure web,
+  with a Ø7 stub underneath that reaches through the lid and rests ~0.3 mm
+  above the switch plunger — press the paddle, the web flexes, the plunger
+  clicks;
+- feel it first: print `protography_memtest.stl` (2 g of plastic, 15 min)
+  — if you want it softer/thicker travel, tune `web_t` (0.6–1.0) and
+  reprint just that.
+
+## Layout
+
+- **Camera head** (on the orange FPC) sits alone in a pocket right behind
+  the lens window: rails grip its top/bottom edges, corner posts stop it
+  from pushing back, the FPC bends freely toward the main stack. Give the
+  flex its natural bend radius — don't crease it.
+- **XIAO + Sense stack lies flat** on floor stops, USB-C and microSD facing
+  the slotted side wall.
+- **Battery** lies flat behind the stack, wires through the mid gap (tape
+  the solder joints — they're the weak point of a direct-soldered pouch).
+- **Antenna** along an interior wall (plastic is RF-transparent; keep it
+  away from battery leads), cable out through the rim notch at the back.
 
 ## Print the coupon FIRST
-
-Board measurements came from Seeed's wiki, not from calipers on your parts.
-Before printing the real shell, print the **coupon** and check it against
-your assembled device:
 
 | coupon feature | checks parameter | expected fit |
 |---|---|---|
 | Ø11.6 hole | `lens_d` | lens barrel rotates freely (AF travel) |
-| Ø7.6 hole | `btn_hole` + cap press-fit | cap grips, dome proud |
+| Ø9.5 hole | `btn_clear` | stub slides, no scuffing |
 | 10.4 × 4.4 slot | `usb_w/usb_h` | USB-C plugs through |
 | 15.5 × 3.6 slot | `sd_w/sd_h` | card inserts and latches |
-| 3 pins Ø2.0–2.4 | hole-size calibration | which pin your printer's holes fit best |
+| 3 pins Ø2.0–2.4 | printer hole calibration | which size fits your machine |
+| square pocket block | `sw_w` | SMD switch wedges in and stays |
 
-Adjust the constants, re-export, then print the parts. Also caliper-check:
-total stack thickness (`stack_h` — camera board + B2B + XIAO), lens center
-offset from the camera board's lower edge (`lens_off_w`), your battery
-(`bat_l/bat_w/bat_t`), and where the slots actually land on your boards
-(`usb_x`, `sd_x` — slot center distance from the front wall, and their
-heights in the shell source).
+Then caliper the real parts and adjust before printing the big pieces:
+
+- camera head: `cam_w`, `cam_h`, `cam_t`
+- stack thickness: `stack_t` (XIAO + B2B + Sense board)
+- battery: `bat_l`, `bat_w`, `bat_t`
+- slot positions along the wall: `usb_x`, `sd_x` and their heights
+  `usb_z`, `sd_z`
+- switch body: `sw_w`, `sw_t`, `sw_pl`
 
 ## Print settings
 
 | | |
 |---|---|
-| material | PETG recommended (handles pocket heat better than PLA); PLA fine for prototypes |
-| layer height | 0.2 mm (0.12 for the cap's dome) |
+| material | PETG recommended (pocket heat, flex fatigue); PLA fine for drafts |
+| layer height | 0.2 mm general; **0.12 mm for the lid and memtest** (the 0.7 web needs clean layers) |
 | perimeters | 3 |
-| infill | 15–20 %, gyroid |
-| supports | none needed — print the shell **front face down**, lid and cap flat |
-| orientation detail | the lens bezel recess lands on the plate side, so the visible front gets the smoothest surface |
+| infill | 15–20 % gyroid |
+| supports | none — shell front-face down, lid and coupon flat, memtest flat |
 
-## Parts
+## Assembly order
 
-| file | part |
-|---|---|
-| `protography_shell.stl` | body: lens window, USB/SD slots, LED window, board clips, battery bay, antenna notch |
-| `protography_lid.stl` | top plate: shutter hole, antenna exit, engraving; friction rim underneath |
-| `protography_shutter_cap.stl` | dome cap — presses through the lid onto the tactile plunger |
-| `protography_coupon.stl` | calibration plate — print first, recycle after |
-
-## Assembly
-
-1. Seat the board stack in the front pocket: camera board under the two
-   edge clips (a strip of foam tape behind the XIAO keeps it snug), lens in
-   the window.
-2. Lay the battery in its floor recess; route wires through the wire gap.
-3. Tape or glue the tactile button so its plunger sits just under the
-   shutter hole (sticking it to the lid's underside also works — give the
-   wires slack).
-4. Press the cap into the hole from above.
-5. Route the antenna along the interior wall (plastic is transparent to
-   2.4 GHz; keep it away from the battery leads if you can), cable out
-   through the rim notch.
-6. Press the lid on. To open later: pry gently at a corner.
+1. Camera head into the front pocket (lens through the window), FPC bent
+   back toward the stack — a foam pad behind it keeps it snug.
+2. Stack into the floor stops (USB/SD toward the slotted wall).
+3. Battery in its bay, wires through the gap, joints taped.
+4. SMD switch wedged into the pedestal pocket (test the click with a
+   toothpick before closing).
+5. Antenna placed, cable through the rim notch.
+6. Lid on: align the membrane over the pedestal, press the friction rim
+   home. Pry gently at a corner to open.
 
 ## Verification harness
 
-`verify.scad` next to the model asserts that every cutout is actually cut
-through (it exists because a drill that starts 1 mm inside the wall makes a
-very convincing-looking *blind pocket* — ask the LED window). Run
-`openscad -D p=N -o tmp.stl verify.scad` for N = 1..5 after changing any
-parameter; every run must print `Current top level object is empty`.
+`verify.scad` asserts every cutout (lens, USB, SD, LED, lid stub clearance)
+is a true through-hole — run `openscad -D p=N -o tmp.stl verify.scad` for
+N = 1..5 after changing parameters; each must report
+`Current top level object is empty`. It exists because a drill that starts
+inside the wall makes a very convincing-looking *blind pocket*.
 
 ## Sculpting your own
 
-The STLs import cleanly into Blender / Tinkercad / Fusion if you want to
-sculpt an organic shell over the functional bits — keep the cutout
-positions, go wild elsewhere.
+The STLs import cleanly into Blender / Tinkercad / Fusion — keep the
+cutout positions and the pedestal/membrane alignment, go wild elsewhere.
