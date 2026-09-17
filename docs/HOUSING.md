@@ -13,8 +13,8 @@ that's already the slicer-native format:
 
 | file | part |
 |---|---|
-| `protography_shell.stl` | body: lens window, camera-head pocket, lying-stack stops, switch pedestal, USB/SD slots, LED window, battery bay |
-| `protography_lid.stl` | top plate with the **compliant membrane shutter** (web + paddle + stub), engraving, friction rim |
+| `protography_shell.stl` | body: **square camera window**, camera-head posts, lying-stack stops, switch pedestal, USB slot, LED window, battery bay |
+| `protography_lid.stl` | top plate with the **compliant membrane shutter** (one connected solid: disc + paddle + stub), engraving, friction rim |
 | `protography_memtest.stl` | standalone membrane — print first and feel the click |
 | `protography_coupon.stl` | calibration plate — print first, caliper everything |
 
@@ -36,12 +36,18 @@ printed compliant mechanism, nothing to solder or glue:
 
 ## Layout
 
-- **Camera head** (on the orange FPC) sits alone in a pocket right behind
-  the lens window: rails grip its top/bottom edges, corner posts stop it
-  from pushing back, the FPC bends freely toward the main stack. Give the
-  flex its natural bend radius — don't crease it.
-- **XIAO + Sense stack lies flat** on floor stops, USB-C and microSD facing
-  the slotted side wall.
+- **Camera head** (on the orange FPC) shows its square face through the
+  square front window — corner posts stop it at the right depth, rails
+  support its edges, a foam pad behind keeps it snug, and the FPC bends
+  freely toward the main stack. Give the flex its natural bend radius —
+  don't crease it.
+- **XIAO + Sense stack lies flat** on floor stops, USB-C facing the slotted
+  side wall.
+- **microSD**: insert the card once before closing — there is deliberately
+  no slot in the wall. (If that changes, `sd_w/sd_h/sd_x/sd_z` params can
+  come back.)
+- **Battery** defaults sized to the real cell (~25 x 38 x 5.5): overall the
+  body is now a slim bar (~74 x 31 x 20 mm).
 - **Battery** lies flat behind the stack, wires through the mid gap (tape
   the solder joints — they're the weak point of a direct-soldered pouch).
 - **Antenna** along an interior wall (plastic is RF-transparent; keep it
